@@ -1,11 +1,20 @@
 # Manual Grading
 
-PrairieLearn supports manual grading of questions by downloading a CSV file with student answers and uploading a CSV file with question scores and optional per-question feedback. There is not currently an online web interface for manual grading.
+The Manual Grading feature allows the instructor role to review any internal, external, and manual grading content submitted by students and assign a final score that overrides internal or external scoring if it exists. Multiple instructors can concurrently grade a question configured for manual grading and resolve grading conflicts where there are multiple grades simaltanously submitted by instructors. Question feedback can also be given to the student.
 
+A legacy Manual Grading feature also exists that supports manual grading of questions by downloading a CSV file with student answers and uploading a CSV file with question scores and optional question feedback.
+## Releasing Manual Grading Questions
 
-## Configuring a question for manual grading
+(This might not be true based on how we query for manual grading questions )
 
-The [`info.json` file](question.md#question-infojson) in the question should set `"gradingMethod": "Manual"`, like this:
+Requirements:
+- Query question configuration and if manual grading enabled, look for boolean value on submission to determine if it should qualify for manual grading.
+- 
+Manual grading must be enabled in the question configuration before a question is released to the students. If a question is released before manual grading is enabled, and student submissions are graded, an instructor must manually tabulate scores in a CSV spreadsheet and override the scores using the Legacy Manual Grading feature.
+
+## Configuring a question only for manual grading
+
+The [`info.json` file](question.md#question-infojson) in the question should contain `"gradingMethod": "Manual"`:
 ```json
 {
     "uuid": "cbf5cbf2-6458-4f13-a418-aa4d2b1093ff",
@@ -15,7 +24,23 @@ The [`info.json` file](question.md#question-infojson) in the question should set
 }
 ```
 
-Manually-graded questions allow students to "Save" answers, but they don't have a "Save & Grade" button. Instead, the student just saves answers as many times as they want, and all of their submitted answers are stored. It is recommended to also mark manually-graded questions as `"singleVariant": true` so that students are only given a single random variant, even on Homework assessments.
+TO DO: Post in a photo of the manual grading student screen and mention how the 'Save' button will only appear.
+
+## Configuring a question for internal, external and manual grading
+
+The [`info.json` file](question.md#question-infojson) in the question should contain `"gradingMethod": ["Interal", "External", "Manual"]` for all grading options.  :
+```json
+{
+    "uuid": "cbf5cbf2-6458-4f13-a418-aa4d2b1093ff",
+    "gradingMethod": ["Interal", "External", "Manual"],
+    "singleVariant": true,
+    ...
+}
+```
+
+TO DO: Post in a photo of the manual grading student screen and show how the 'Save and Grade' button / 'Save' button appears.
+
+Question configurations with only a 'Manual' grading method allow students to "Save" answers, but they do not have a "Save & Grade" button (see images). Instead, the student just saves answers as many times as they want, and all of their submitted answers are stored. It is recommended to also mark manually-graded questions as `"singleVariant": true` so that students are only given a single random variant, even on Homework assessments.
 
 Any [elements](elements/) can be used in the [`question.html`](question.md#question-questionhtml) to write manually graded questions. All of the student input will be saved and available for manual grading, including `pl-string-input`, `pl-file-editor`, `pl-file-upload`, etc.
 
