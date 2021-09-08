@@ -1,7 +1,5 @@
 -- BLOCK instance_questions_manually_grade_submission
-DROP FUNCTION IF EXISTS instance_questions_manually_grade_submission(bigint, bigint, double precision, text, jsonb);
-
-CREATE OR REPLACE FUNCTION
+CREATE FUNCTION
     instance_questions_manually_grade_submission(
         IN arg_instance_question_id bigint,
         IN arg_user_id bigint,
@@ -37,11 +35,7 @@ BEGIN
 
     IF NOT FOUND THEN RAISE EXCEPTION 'instance question not found: %', arg_instance_question_id; END IF;
 
-    IF instance_question_modified_at != arg_modified_at::timestamp THEN
-        is_conflict = TRUE;
-    END IF;
-
-    -- Create grading job even if a conflict will exist
+    -- Create grading job even if a conflict will exist so record of it exists in db
     SELECT s.*
     INTO last_submission
     FROM
@@ -54,7 +48,11 @@ BEGIN
     ORDER BY s.date DESC, s.id DESC
     LIMIT 1;
 
-    instance_question := instance_questions_assign_manual_grading_user(assessment_question_id, instance_question_id, arg_user_id);
+    IF instance_question_modified_at != arg_modified_at::timestamp THEN
+        is_conflict = TRUE;
+    END IF;
+
+    PERFORM instance_questions_assign_manual_grading_user(assessment_question_id, instance_question_id, arg_user_id);
     grading_job := to_jsonb(grading_jobs_insert_manual(last_submission.id, arg_user_id, arg_score, arg_manual_note, is_conflict));
 
     -- Resolve original conflict even if a new one occurs

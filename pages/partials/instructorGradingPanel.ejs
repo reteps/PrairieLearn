@@ -1,4 +1,7 @@
 <% if (authz_data.has_instructor_view || authz_data.has_course_permission_view) { %>
+    <!-- 
+      - Renders a panel to manually grade an instance question when injected with 'submission' object
+      - View is re-used to load two panels to resolve manual grading conflict when injected with 'conflict_diff' object-->
     <div class="card mb-4 border-success">
       <% if (typeof diff !== 'undefined') { %>
         <div class="card-header bg-success"><%= diff %> Grade</div>
@@ -43,7 +46,7 @@
                 <button style="width: 100%" name="__action" value="abort_manual_grading" class="btn btn-danger">Skip and Leave Grading</button>
               <% } else { %>
                 <input type="hidden" name="gradingJobId" value="<%= typeof conflict_diff !== 'undefined' && conflict_diff.grading_job_id %>">
-                <input type="hidden" name="diffType" value="<%= submission.diffType %>">
+                <input type="hidden" name="conflictDataSource" value="<%= submission.conflictDataSource %>">
                 <button name="__action" value="resolve_manual_grading_conflict" class="btn btn-primary">Accept <%= diff %> Grade</button>
               <% }%>
             </div>

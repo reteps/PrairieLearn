@@ -3,7 +3,7 @@
   <head>
     <%- include('../partials/head', {pageNote: 'Preview', pageTitle: question.qid}); %>
     <%- include('../partials/mathjax'); %>
-    <script src="/node_modules/socket.io-client/dist/socket.io.slim.js"></script>
+    <script src="<%= node_modules_asset_path('socket.io-client/dist/socket.io.min.js') %>"></script>
     <script>
       document.urlPrefix = '<%= urlPrefix %>';
     </script>
@@ -23,6 +23,7 @@
     <div id="content" class="container">
       <div class="row">
 
+        <!--Displays warning when another manual grading user is marking same instance question-->
         <% if (typeof conflict_diff == 'undefined' && grading_user != null && grading_user.user_id != null && authn_user.user_id != grading_user.user_id) { %>
         <div class="col-lg-12 col-sm-12">
           <div class="card mb-4">
@@ -33,6 +34,7 @@
         </div>
         <% } %>
 
+        <!--Display the Conflict message and display two conflict panels because a conflict object was detected-->
         <% if (typeof conflict_diff != 'undefined') { %>
           <div class="col-lg-12 col-sm-12">
             <div class="card mb-4">
@@ -42,7 +44,7 @@
             </div>
           </div>
           <div class="col-lg-6 col-sm-12">
-            <%- include('../partials/instructorGradingPanel', {diff: 'Existing', submission: conflict_diff.existing, question_context: 'instructor'}); %>
+            <%- include('../partials/instructorGradingPanel', {diff: 'Current', submission: conflict_diff.existing, question_context: 'instructor'}); %>
           </div>
           <div class="col-lg-6 col-sm-12">
             <%- include('../partials/instructorGradingPanel', {diff: 'Incoming', submission: conflict_diff.incoming, question_context: 'instructor'}); %>

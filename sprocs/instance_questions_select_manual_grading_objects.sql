@@ -1,7 +1,6 @@
 -- BLOCK instance_questions_select_manual_grading_objects
-DROP FUNCTION IF EXISTS instance_questions_select_manual_grading_objects(bigint, bigint, bigint);
 
-CREATE OR REPLACE FUNCTION
+CREATE FUNCTION
     instance_questions_select_manual_grading_objects(
         IN arg_instance_question_id bigint,
         IN arg_user_id bigint,
@@ -12,8 +11,7 @@ CREATE OR REPLACE FUNCTION
         OUT variant jsonb,
         OUT submission jsonb,
         OUT grading_user jsonb,
-        OUT assessment_question jsonb,
-        OUT incoming_conflict jsonb
+        OUT conflict_grading_job jsonb
     )
 AS $$
 DECLARE
@@ -33,18 +31,18 @@ BEGIN
 
     PERFORM instance_questions_assign_manual_grading_user(assessment_question_id, instance_question_id, arg_user_id);
 
-    -- conflict df: when TA 'x' submits manual grade while TA 'y' is grading same submission
+    -- conflict df: when TA 'x' and TA 'y' have same manual grading page open at same time and both submit a grade. Second submitter must decide whether first or second grade valid.
     IF arg_conflicting_grading_job_id IS NOT NULL THEN
-        SELECT json_build_object('id', gj.id, 'score', gj.score, 'feedback', gj.feedback, 'graded_by', CONCAT(u.name, ' (', u.uid, ')'), 'diffType', 'grading_job')
-        INTO incoming_conflict
+        SELECT json_build_object('id', gj.id, 'score', gj.score, 'feedback', gj.feedback, 'graded_by', CONCAT(u.name, ' (', u.uid, ')'), 'conflictDataSource', 'grading_job')
+        INTO conflict_grading_job
         FROM
             grading_jobs AS gj
             JOIN users AS u ON (u.user_id = gj.auth_user_id)
         WHERE gj.id = arg_conflicting_grading_job_id;
     ELSE
-        -- always check if grading conflict needs to be resolved
-        SELECT json_build_object('id', gj.id, 'score', gj.score, 'feedback', gj.feedback, 'graded_by', CONCAT(u.name, ' (', u.uid, ')'), 'diffType', 'grading_job')
-        INTO incoming_conflict
+        -- always check if grading conflict needs to be resolved in case second submitter closed browser on conflict resolution view.
+        SELECT json_build_object('id', gj.id, 'score', gj.score, 'feedback', gj.feedback, 'graded_by', CONCAT(u.name, ' (', u.uid, ')'), 'conflictDataSource', 'grading_job')
+        INTO conflict_grading_job
         FROM
             grading_jobs AS gj
             JOIN submissions AS s ON (s.id = gj.submission_id)
@@ -57,31 +55,21 @@ BEGIN
         LIMIT 1;
     END IF;
 
-    SELECT to_jsonb(iq.*), to_jsonb(q.*), to_jsonb(v.*), to_jsonb(s.*), to_jsonb(aq.*)
-    INTO instance_question, question, variant, submission, assessment_question
+    SELECT to_jsonb(iq.*), to_jsonb(q.*), to_jsonb(v.*), to_jsonb(s.*), to_jsonb(u.*)
+    INTO instance_question, question, variant, submission, grading_user
     FROM
         instance_questions AS iq
         JOIN assessment_questions AS aq ON (aq.id = iq.assessment_question_id)
         JOIN questions AS q ON (q.id = aq.question_id)
         JOIN variants AS v ON (v.instance_question_id = iq.id)
         JOIN submissions AS s ON (s.variant_id = v.id)
-    WHERE iq.id = arg_instance_question_id
-    ORDER BY s.date DESC, s.id DESC
-    LIMIT 1;
-
-    SELECT to_jsonb(u.*)
-    INTO grading_user
-    FROM
-        instance_questions AS iq
         JOIN users_manual_grading AS umg ON (iq.id = umg.instance_question_id)
         JOIN users AS u ON (u.user_id = umg.user_id)
-        JOIN variants AS v ON (v.instance_question_id = iq.id)
-        JOIN submissions AS s ON (s.variant_id = v.id)
         LEFT JOIN grading_jobs AS gj ON (s.id = gj.submission_id)
     WHERE
         iq.id = arg_instance_question_id
         AND
-        -- grading user conflict auth user is still the manual grading user even beyond manual grading expiry time
+        -- We want to display auth user for when grade was submitted, as manual grading user is flushed due to manual grading expiry time
         (
             (gj.manual_grading_conflict IS TRUE
             AND umg.user_id = gj.auth_user_id)
@@ -90,6 +78,7 @@ BEGIN
         )
     ORDER BY s.date DESC, s.id DESC, umg.date_started ASC
     LIMIT 1;
+
 
 END;
 $$ LANGUAGE plpgsql VOLATILE;
