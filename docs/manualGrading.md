@@ -1,37 +1,52 @@
 # Manual Grading
 
-Prairie Learn supports a manual grading interactive UI and a legacy manual grading CSV upload feature.
+Prairie Learn supports an interactive UI and a legacy manual grading CSV upload manual grading feature.
 
-A question configured for manual grading will allow a student to submit an answer to a question without it being autograded by a question element. This allows an instructor or TA to manually grade the submission at a later time.
-
-The student will only see the "Save" button on a question when a question is configured for manual grading. The consequence of a student pressing the "Save" button, instead of the "Save & Grade" button, is that the `def parse()` function is called within the element python file instead of the  `def grade()`. For example, if an instructor includes a `pl-string-input` element in a question for manual grading, when a student presses "Save", the `pl-string-input` will ensure that (1.) an answer was submitted and that (2.) the submission was a valid string in accordance to the `def parse()` method found in the [pl-string-input.py file](https://github.com/PrairieLearn/PrairieLearn/blob/master/elements/pl-string-input/pl-string-input.py#L176-L198).
-
-It is recommended to also mark manually-graded questions as `"singleVariant": true`, even on Homework assessments, so that students are only given a single random variant.
+A question configured for manual grading will allow a student to submit an answer to a question without being autograded by Prairie Learn's internal or external autograder mechanisms. This allows an instructor or TA to manually grade an answer to a submission at a later time.
 
 ## Configuring a Question for Manual Grading
 
-Both, the interactive UI and legacy CSV upload, manual grading features can be configured by adding the "Manual" grading method to a question configuration:
+Both the interactive UI and legacy CSV upload manual grading features can be configured by adding the "Manual" grading method to a question configuration:
 
 ```json
 {
     "uuid": "cbf5cbf2-6458-4f13-a418-aa4d2b1093ff",
-    "gradingMethod": "Manual",
+    "gradingMethods": ["Manual", "Internal"],
     "singleVariant": true,
     ...
 }
 ```
 
-## Configuration Permissions for Manual Grading Users
+It is recommended to also mark manually-graded questions as `"singleVariant": true`, even on Homework assessments, so that students are only given a single random variant. This may not be beneficial on questions that have more than the "Manual" grading method by also including "Internal" or "External" grading methods.
 
-Manual grading users must have "Student data access" viewer permissions to be able to manually grade a submission. A course "Editor" or "Owner" will have to add the manual grading users, with the appropriate permissions, in the 'Staff' area of the course configuration page.
+## "Save" / "Save & Grade" Actions
+
+The "Save" and "Save & Grade" actions appear as buttons on a question. Each button will be available to a student based on the grading method configuration of a question. Here are the following configuration possibilities that specify when each button will appear:
+
+```text
++----------------------------------+---------+------------------------+
+|                                  |  Save   |       Save & Grade     |
++----------------------------------+---------+------------------------+
+| Manual                           |    ✓    |                        |
+| Manual, Internal                 |    ✓    |           ✓            |
+| Manual, External                 |    ✓    |           ✓            |
+| Manual, Internal, External       |    ✓    |           ✓            |
++----------------------------------+---------+------------------------+
+```
+
+The student will only see the "Save" button on a question view when a question is configured with *only* the "Manual" grading method. The "Save & Grade" button will appear on a question when a question is configured with an "Interal" or "External" option in addition to the "Manual option. Each button calls different back-end functions within each element file on the `question.html` page. The "Save" button calls the `def parse()` function and the "Save & Grade" button calls the `def grade()` function within the element's python file.
+
+Automatic internal and/or external grading will occur when a student presses the "Save & Grade" button to submit an answer to a question. The question will then appear in the "Manual Grading Queue" for review by a manual grading user. The submission's internal and external grader will produce a score, but this score will be overwritten by the manual grading user when a manual grade is submitted.
+
+For example, if an instructor includes a `pl-string-input` element in a question for manual grading, when a student presses "Save", the `pl-string-input` will ensure that (1.) an answer was submitted and that (2.) the submission was a valid string in accordance to the `def parse()` method found in the [pl-string-input.py file](https://github.com/PrairieLearn/PrairieLearn/blob/master/elements/pl-string-input/pl-string-input.py#L176-L198) element file.
 
 ## Manual Grading (UI Interactive)
 
-The manual grading view re-uses the student question view, which displays submissions and grading results, and adds a grading panel to submit a manual grade `score` and `feedback`. The score and feedback is added to the latest submission displayed on the manual grading view. The feedback must be a valid string and the score must be a number divisible by 5 and out of 100 percent.
+The manual grading view re-uses the student question view, which displays student submissions with their grading results, but adds a manual grading panel to the view. The panel allows a manual grading user to submit a `score` and `feedback`. The score and feedback is added to the latest submission displayed on the manual grading view. The feedback must be a valid string and the score must be a number divisible by 5 and out of 100 percent.
 
 ![](manual-grading/grading-panel.png)
 
-To list questions and begin grading, one must have editor privileges and navigate to the course. Click on the assessment to display a list of questions. The navigation bar header will include a "Manual Grading" button.
+To list questions and begin grading, one must have student data viewer privileges and navigate to the course. Click on the assessment to display a list of questions. The navigation bar header will include a "Manual Grading" button.
 
 Clicking on the "Manual Grading" button will navigate to a page that lists all questions with a "Manual" type grading method. This is the "Manual Grading Queue". Each ungraded student submission will count as one ungraded question. Students can save multiple submissions on a question, but only the last ungraded submission is counted. Hence, if a student saves another submission after an item has been manually graded, the "Ungraded" category increments by plus one.
 
