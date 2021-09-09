@@ -52,9 +52,9 @@ Each ungraded student submission will count as one ungraded question. Students c
 
 ![](manual-grading/list-manual-questions.png)
 
-It is, therefore, recommended that an instructor or TA only submits manual grades after an assessment has closed. If an assessment is left open and a student makes another submission, it would be queued to be manually graded. The choice to leave an assessment open and allow the student to make new submissions after manual grading, ultimately, is up to the discretition of the instructor. The old manual grading score will be overwritten by any further manual grading action on new submissions.
+It is, therefore, recommended that an instructor or TA only submit manual grades after an assessment has closed. If an assessment is left open and a student makes another submission, it would be queued to be manually graded again. The choice to leave an assessment open and allow the student to make new submissions after manual grading, ultimately, is up to the discretition of the instructor. The old manual grading score will be overwritten by any further manual grading action on new submissions.
 
-A manual grade is calculated by the instructor and is incompatible with an array of `points` and/or `maxPoints` feature on the question configuration.
+The UI is incompatible with an array of `points` and/or `maxPoints` feature on the question configuration.
 
 ### Grade Next
 
@@ -68,11 +68,11 @@ A manual grading conflict occurs when multiple manual grading users click "Grade
 
 ![](manual-grading/grading-warning.png)
 
-If the first user submits a manual grade and any subsequent user submits a grade, then the subsequent user will be navigated to a new view that displays both manual grading submissions and asks the user to resolve the manual grading conflict. The "Current Grade" is the submission by the second user who did not adhere to the warning displayed on the page. The "Incoming Grade" is the current user's grade who encounters and should resolve the grading conflict.
+If the first user submits a manual grade and a subsequent user submits a grade, then the subsequent user will be navigated to a new view that displays both manual grading submissions and asks the user to resolve the manual grading conflict. The "Current Grade" is the submission by the second user who did not adhere to the warning displayed on the page. The "Incoming Grade" is the current user's grade who encounters and should resolve the grading conflict.
 
 ![](manual-grading/grading-warning.png)
 
-In the scenario that any subsequent user does not resolve the conflict, the instance question will still count as an ungraded instance question in the "Manual Grading Queue". Therefore, the "Grade Next" button will eventually lead a manual grading user to the view to resolve the manual grading conflict.
+In the scenario that the subsequent user does not resolve the conflict, the instance question will still count as an ungraded instance question in the "Manual Grading Queue". The grading conflict will persist. The "Grade Next" button will eventually load the view to resolve the manual grading conflict before a question is considered fully graded.
 
 ## Manual Grading Legacy (CSV Upload)
 
