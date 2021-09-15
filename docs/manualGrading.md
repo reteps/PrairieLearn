@@ -4,53 +4,6 @@ Prairie Learn supports (1.) an interactive UI and (2.) a CSV grade upload featur
 
 The manual grading feature allows an instructor or TA to submit a grade after a student has made a submission on a question. This question must be configured for manual grading before manual grading can occur. Once a question is configured for manual grading, students will only be able to make a submission and an instructor will be able to grade the submission at a later time.
 
-## Save / Save & Grade Actions
-
-Two actions are possible on questions configured for manual grading: "Save" and "Save and Grade". These actions have different consequences. A "Save" button only validates a submission while a "Save & Graded" button will attempt to automatically grade internal and external grading components. The leftover manual component, which cannot be autograded, is later graded by the manual grading user (a TA or instructor).
-
-"Save" and "Save & Grade" actions appear on a question based on the following configuration:
-
-```text
-+----------------------------------+---------+------------------------+
-|                                  |  Save   |       Save & Grade     |
-+----------------------------------+---------+------------------------+
-| Manual                           |    ✓    |                        |
-| Manual, Internal                 |    ✓    |           ✓            |
-| Manual, External                 |    ✓    |           ✓            |
-| Manual, Internal, External       |    ✓    |           ✓            |
-+----------------------------------+---------+------------------------+
-```
-
-The consequences for each different actions are listed below for each grading method type:
-
-### Manual Only
-
-It is not possible to "Save & Grade" a question that is configured with only the `Manual` grading method because it can only be reviewed and understood by a manual grading user. There is no automatic code to support a "Save & Grade" function.
-
-### Internal with Manual
-
-Questions configured with `Internal` and `Manual` grading methods can perform "Save" and "Save & Grade" actions.
-
-The "Save" action calls the `parse()` function and the "Save & Grade" function calls the `grade()` function in each respective HTML element. For example, the "Save" button calls the [def parse()](https://github.com/PrairieLearn/PrairieLearn/blob/master/elements/pl-string-input/pl-string-input.py#L176-L198) function in the `pl-string-input` element to perform validation when it is implemented in the `question.html`.
-
-The "Save & Grade" action calls the [def grade()](https://github.com/PrairieLearn/PrairieLearn/blob/master/elements/pl-string-input/pl-string-input.py#L201-L257) to support automatic grading.
-
-Saved answers will appear in the manual grading queue, but will not result in any internal automatic grading, but the manual grading user will only see the ungraded submission. It is suggested that students click on "Save & Grade" to produce grading results for the manual grading user.
-
-### External with Manual
-
-Questions configured with `External` and `Manual` grading methods can perform "Save" and "Save & Grade" actions.
-
-The "Save" logic is the same as above in "Internal with Manual". On the other hand, the "Save & Grade" logic eventually results in the submission being sent to an external grader to run customized logic.
-
-Saved answers will appear in the manual grading queue, but will not result in any external automatic grading, but the manual grading user will only see the ungraded submission. It is suggested that students click on "Save & Grade" to produce grading results for the manual grading user.
-
-### Internal & External with Manual (DEVELOPMENT NEEDED)
-
-At this time, the internal grader is not configured to work in tandem with the external grader. Both the internal and external grading operations occur asynchronously and there is no integration or interface between the internal and external grader to share information.
-
-The front-end student/instructor/manual grading question view does not support displaying external grading results, or real-time grading information, when external grading is configured alongside internal and manual grading. Only the internal grading information will be displayed.
-
 ## Configuring a Question for Manual Grading
 
 Both, the interactive UI and legacy CSV upload, manual grading features can be configured by adding the "Manual" grading method to a question configuration:
@@ -81,6 +34,51 @@ Clicking on the "Manual Grading" button will load a new view that lists all ques
 It is, therefore, recommended that an instructor or TA only submits manual grades after an assessment has closed. The choice to leave an assessment open and allow the student to make new submissions after manual grading, ultimately, is up to the discretition of the instructor.
 
 A manual grade should be calculated by the instructor and is incompatible with an array of `points` and/or `maxPoints` feature on the question configuration, as it would require manual grading the same question many times and submitting the percentage for the current score increase. It is currently possible to configure both, but this ability will be removed in the near future. This is a breaking change.
+
+## Save / Save & Grade Actions
+
+Two actions are possible on questions configured for manual grading: "Save" and "Save and Grade". These actions have different consequences. A "Save" button only validates a submission while a "Save & Graded" button will attempt to automatically grade internal and external grading components. The leftover manual component, which cannot be autograded, is later graded by the manual grading user (a TA or instructor).
+
+"Save" and "Save & Grade" actions appear on a question based on the following configuration:
+
+```text
++----------------------------------+---------+------------------------+
+|                                  |  Save   |       Save & Grade     |
++----------------------------------+---------+------------------------+
+| Manual                           |    ✓    |                        |
+| Manual, Internal                 |    ✓    |           ✓            |
+| Manual, External                 |    ✓    |           ✓            |
+| Manual, Internal, External       |    ✓    |           ✓            |
++----------------------------------+---------+------------------------+
+```
+
+The consequences for each different actions are listed below for each grading method type:
+
+### Manual Only
+
+It is not possible to "Save & Grade" a question that is configured with only the `Manual` grading method because it can only be reviewed and understood by a manual grading user. There is no automatic code to support a "Save & Grade" function.
+
+### Internal with Manual
+
+Questions configured with `Internal` and `Manual` grading methods can perform "Save" and "Save & Grade" actions.
+
+The "Save" action calls the `parse()` function and the "Save & Grade" function calls the `grade()` function in each respective HTML element. For exmple, to determine the validation rules for the "Save" button on `pl-string-input`, one would look at calls the [def parse()](https://github.com/PrairieLearn/PrairieLearn/blob/master/elements/pl-string-input/pl-string-input.py#L176-L198) function.
+
+Saved answers will appear in the manual grading queue, but they will not produce any automatic grading information that contribute to the ease of manual grading because the manual grading user will only see the ungraded submission for saved answers. It is suggested that students click on "Save & Grade" to produce automated grading information to help support the manual grading user.
+
+### External with Manual
+
+Questions configured with `External` and `Manual` grading methods can perform "Save" and "Save & Grade" actions.
+
+The "Save" logic is the same as above in "Internal with Manual". On the other hand, the "Save & Grade" logic eventually results the submission being sent to the external grader to run customized logic.
+
+Saved answers follow the same logic as "Internal with Manual". "Save & Grade" should be used by the student to produce automated grading information that is displayed on the Manual Grading View and helps support the manual grading user.
+
+### Internal & External with Manual (DEVELOPMENT NEEDED)
+
+At this time, the internal grader is not configured to work with the external grader. Both the internal and external grading operations occur asynchronously and there is no integration or interface between the internal and external grader to share information.
+
+The front-end student/instructor/manual grading question view does not support displaying external grading results, or real-time grading information, when external grading is configured alongside internal and manual grading. Only the internal grading information will be displayed.
 
 ### User Permissions to Manual Grade Questions
 
