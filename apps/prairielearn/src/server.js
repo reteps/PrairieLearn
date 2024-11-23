@@ -1369,7 +1369,7 @@ export async function initExpress() {
         'course-instance-billing',
         res.locals,
       );
-      res.locals.billing_enabled = hasCourseInstanceBilling && isEnterprise();
+      res.locals.billing_enabled = true; // hasCourseInstanceBilling && isEnterprise();
 
       const hasLti13CourseInstance = await validateLti13CourseInstance(res.locals);
       res.locals.lti13_enabled = hasLti13CourseInstance && isEnterprise();
@@ -1432,6 +1432,7 @@ export async function initExpress() {
     (await import('./pages/instructorFileDownload/instructorFileDownload.js')).default,
   );
   if (isEnterprise()) {
+    console.log('enterprise features enabled');
     app.use('/pl/course_instance/:course_instance_id(\\d+)/instructor/instance_admin/billing', [
       function (req, res, next) {
         res.locals.navSubPage = 'billing';

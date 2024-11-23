@@ -1,10 +1,12 @@
 import { html } from '@prairielearn/html';
+import { h } from 'preact';
 
 import { HeadContents } from '../../../components/HeadContents.html.js';
 import { Navbar } from '../../../components/Navbar.html.js';
 import { renderWithProps } from '../../../lib/preact.js';
 import { InstructorInstanceAdminBillingForm } from '../../lib/billing/components/InstructorInstanceAdminBillingForm.js';
 import { type PlanName } from '../../lib/billing/plans-types.js';
+import { render } from 'preact-render-to-string';
 
 export type EnrollmentLimitSource = 'course_instance' | 'institution';
 
@@ -31,16 +33,17 @@ export function InstructorCourseInstanceBilling({
   editable: boolean;
   resLocals: Record<string, any>;
 }) {
-  return html`
-    <!doctype html>
+  return render(
     <html lang="en">
-      <head>
-        ${HeadContents({ resLocals })}
-      </head>
+      <head
+        dangerouslySetInnerHTML={{
+          __html: HeadContents({ resLocals }).toString(),
+        }}
+      ></head>
       <body>
-        ${Navbar({ resLocals })}
+        {Navbar({ resLocals })}
         <main id="content" class="container mb-4">
-          ${!editable
+          {!editable
             ? html`
                 <div class="alert alert-warning">
                   Only course owners can change billing settings.
@@ -50,7 +53,7 @@ export function InstructorCourseInstanceBilling({
           <div class="card mb-4">
             <div class="card-header bg-primary text-white d-flex">Billing</div>
             <div class="card-body">
-              ${renderWithProps(
+              {renderWithProps(
                 'InstructorInstanceAdminBillingForm',
                 InstructorInstanceAdminBillingForm,
                 {
@@ -71,6 +74,6 @@ export function InstructorCourseInstanceBilling({
           </div>
         </main>
       </body>
-    </html>
-  `.toString();
+    </html>,
+  );
 }
